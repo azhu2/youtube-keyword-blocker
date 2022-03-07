@@ -1,7 +1,7 @@
 const BLOCKED_KEYWORDS = [
     'Minecraft',
     /^Mix - /,
-    'Hermitcraft'
+    'Hermitcraft',
 ];
 
 function checkVideo(videoElement) {
@@ -14,13 +14,17 @@ function checkVideo(videoElement) {
     }
 }
 
+function checkRow(rowElement) {
+    for (const video of rowElement.getElementsByTagName('ytd-rich-item-renderer')) {
+        checkVideo(video);
+    }
+}
+
 function setupObserver(wrapperElement) {
     const observer = new MutationObserver(mutations => {
         for (const { addedNodes } of mutations) {
             for (const node of addedNodes) {
-                for (const video of node.getElementsByTagName('ytd-rich-item-renderer')) {
-                    checkVideo(video);
-                }
+                checkRow(node);
             }
         }
     });
@@ -28,6 +32,10 @@ function setupObserver(wrapperElement) {
     observer.observe(wrapperElement, {
         childList: true,
     });
+
+    for (const node of wrapperElement.childNodes) {
+        checkRow(node);
+    }
 };
 
 function findWrapperElement(callback) {
