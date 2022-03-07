@@ -1,0 +1,13 @@
+{
+    "name": "Youtube Keyword Blocker",
+    "description": "Automatically hide unwanted Youtube recommendations by keyword",
+    "version": "1.0",
+    "manifest_version": 3,
+    "content_scripts": [
+        {
+            "matches": ["https://youtube.com/", "https://*.youtube.com/"],
+            "js": ["youtube-keyword-blocker.js"],
+            "css": ["youtube-keyword-blocker.css"]
+        }
+    ]
+}
