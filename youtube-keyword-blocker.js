@@ -1,10 +1,4 @@
-const BLOCKED_KEYWORDS = [
-    'Minecraft',
-    /^Mix - /,
-    'Hermitcraft',
-];
-
-function checkVideo(videoElement) {
+function checkVideo(videoElement, blocklist) {
     // Hide ads in case adblocker fails. Also prevents next line from complaining on missing #video-title
     if (videoElement.getElementsByTagName('ytd-display-ad-renderer').length > 0) {
         hideVideo(videoElement);
@@ -12,7 +6,7 @@ function checkVideo(videoElement) {
     }
 
     const title = videoElement.querySelector('#video-title').innerText;
-    for (const keyword of BLOCKED_KEYWORDS) {
+    for (const keyword of blocklist) {
         if (title.search(keyword) > -1) {
             console.log('BLOCKED! ' + title);
             hideVideo(videoElement);
@@ -73,18 +67,18 @@ function clickNotInterested() {
 }
 
 /** Iterate over each video on a row */
-function checkRow(rowElement) {
+function checkRow(rowElement, blocklist) {
     for (const video of rowElement.getElementsByTagName('ytd-rich-item-renderer')) {
-        checkVideo(video);
+        checkVideo(video, blocklist);
     }
 }
 
 /** Set up observer on new rows being added to main video wrapper */
-function setupObserver(wrapperElement) {
+function setupObserver(wrapperElement, blocklist) {
     const observer = new MutationObserver(mutations => {
         for (const { addedNodes } of mutations) {
             for (const node of addedNodes) {
-                checkRow(node);
+                checkRow(node, blocklist);
             }
         }
     });
@@ -94,7 +88,7 @@ function setupObserver(wrapperElement) {
     });
 
     for (const node of wrapperElement.childNodes) {
-        checkRow(node);
+        checkRow(node, blocklist);
     }
 };
 
@@ -113,9 +107,27 @@ function findWrapperElement() {
     });
 }
 
+/** Fetch blocklist from storage.
+  * Returns promise that resolves with array of strings+RegExps */
+function getBlocklist() {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.get({
+            'keywords': [],
+            'regexes': [],
+        }, stored => {
+            resolve(stored['regexes']
+                .map(str => new RegExp(str))
+                .concat(stored['keywords'])
+            );
+        });
+    });
+}
+
 function init() {
-    findWrapperElement()
-        .then(wrapper => setupObserver(wrapper));
+    Promise.all([
+        findWrapperElement(),
+        getBlocklist(),
+    ]).then(values => setupObserver(values[0], values[1]));
 }
 
 init();
