@@ -26,37 +26,40 @@ function hideVideo(videoElement) {
 }
 
 function markNotInterested(videoElement) {
-    openVideoMenu(videoElement, clickNotInterested);
+    openVideoMenu(videoElement)
+        .then(clickNotInterested);
 }
 
-/** Finds 3-dots menu button, clicks it, and calls callback */
-function openVideoMenu(videoElement, callback) {
+/** Finds 3-dots menu button and clicks it. Returns empty promise that resolves once menu is open */
+function openVideoMenu(videoElement) {
     // Open menu
     const menuElement = videoElement.querySelector('#menu');
     var menuButton = menuElement.querySelector('.ytd-menu-renderer button');
     if (!menuButton) {
         // Annoyingly, the menu button can take multiple seconds to render, so set up an observer
-        const menuObserver = new MutationObserver((mutations, observer) => {
-            menuButton = menuElement.querySelector('.ytd-menu-renderer button');
-            if (menuButton) {
-                observer.disconnect();
-                menuButton.click();
-                callback();
-            }
-        });
+        return new Promise((resolve, reject) => {
+            const menuObserver = new MutationObserver((mutations, observer) => {
+                menuButton = menuElement.querySelector('.ytd-menu-renderer button');
+                if (menuButton) {
+                    observer.disconnect();
+                    menuButton.click();
+                    resolve();
+                }
+            });
 
-        menuObserver.observe(menuElement, {
-            childList: true,
-            subtree: true,
-        })
+            menuObserver.observe(menuElement, {
+                childList: true,
+                subtree: true,
+            });
+        });
     } else {
         menuButton.click();
-        callback();
+        return Promise.resolve();
     }
 }
 
 /** Click 'Not interested' button (in separate floating menu element) */
-function clickNotInterested(menuButton) {
+function clickNotInterested() {
     // Timeout's probably not ideal, but seems to work.
     // Possible issues with clicking wrong button (previous video's menu) or calling before menu renders.
     setTimeout(() => {
@@ -95,20 +98,24 @@ function setupObserver(wrapperElement) {
     }
 };
 
-/** Poll for main container rendered. Happens after document.onload */
-function findWrapperElement(callback) {
-    const wrapperInterval = setInterval(pollForWrapper, 100);
-    function pollForWrapper() {
-        const wrapperElement = document.getElementById('contents');
-        if (wrapperElement) {
-            clearInterval(wrapperInterval);
-            callback(wrapperElement);
+/** Poll for main container rendered since it happens after document.onload.
+  * Returns promise that resolves with main container element. */
+function findWrapperElement() {
+    return new Promise((resolve, reject) => {
+        const wrapperInterval = setInterval(pollForWrapper, 100);
+        function pollForWrapper() {
+            const wrapperElement = document.getElementById('contents');
+            if (wrapperElement) {
+                clearInterval(wrapperInterval);
+                resolve(wrapperElement);
+            }
         }
-    }
+    });
 }
 
 function init() {
-    findWrapperElement(setupObserver);
+    findWrapperElement()
+        .then(wrapper => setupObserver(wrapper));
 }
 
 init();
