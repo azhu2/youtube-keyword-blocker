@@ -2,12 +2,12 @@ function getBlocklist() {
     chrome.storage.sync.get({
         'keywords': [],
         'regexes': [],
-    }, stored => {
-        const keywords = stored['keywords'].join('\n');
-        document.getElementById('keywords').value = keywords;
+    }, ({ keywords, regexes }) => {
+        const keywordsText = keywords.join('\n');
+        document.getElementById('keywords').value = keywordsText;
 
-        const regexes = stored['regexes'].join('\n');
-        document.getElementById('regexes').value = regexes;
+        const regexesText = regexes.join('\n');
+        document.getElementById('regexes').value = regexesText;
     });
 }
 

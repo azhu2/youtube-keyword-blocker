@@ -114,10 +114,10 @@ function getBlocklist() {
         chrome.storage.sync.get({
             'keywords': [],
             'regexes': [],
-        }, stored => {
-            resolve(stored['regexes']
+        }, ({ regexes, keywords }) => {
+            resolve(regexes
                 .map(str => new RegExp(str))
-                .concat(stored['keywords'])
+                .concat(keywords)
             );
         });
     });
@@ -127,7 +127,7 @@ function init() {
     Promise.all([
         findWrapperElement(),
         getBlocklist(),
-    ]).then(values => setupObserver(values[0], values[1]));
+    ]).then(([ wrapperElement, blocklist ]) => setupObserver(wrapperElement, blocklist));
 }
 
 init();
