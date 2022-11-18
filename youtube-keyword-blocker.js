@@ -6,13 +6,24 @@ function checkVideo(videoElement, blocklist) {
     }
 
     const title = videoElement.querySelector('#video-title').innerText;
-    for (const keyword of blocklist) {
-        if (title.search(keyword) > -1) {
-            console.log('BLOCKED! ' + title);
-            hideVideo(videoElement);
-            markNotInterested(videoElement);
+    if (blocklist.artists) {
+        if (videoElement.querySelector('.badge-style-type-verified-artist')) {
+            rejectVideo(title, videoElement);
+            return;
         }
     }
+    for (const keyword of blocklist.regexes) {
+        if (title.search(keyword) > -1) {
+            rejectVideo(title, videoElement);
+            return;
+        }
+    }
+}
+
+function rejectVideo(title, videoElement) {
+    console.log('BLOCKED! ' + title);
+    hideVideo(videoElement);
+    markNotInterested(videoElement);
 }
 
 function hideVideo(videoElement) {
@@ -108,17 +119,20 @@ function findWrapperElement() {
 }
 
 /** Fetch blocklist from storage.
-  * Returns promise that resolves with array of strings+RegExps */
+  * Returns promise that resolves with object with array of strings+RegExps and artists flag */
 function getBlocklist() {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get({
             'keywords': [],
             'regexes': [],
-        }, ({ regexes, keywords }) => {
-            resolve(regexes
-                .map(str => new RegExp(str))
-                .concat(keywords)
-            );
+            'artists': false
+        }, ({ regexes, keywords, artists }) => {
+            resolve({
+                regexes: regexes
+                    .map(str => new RegExp(str))
+                    .concat(keywords),
+                artists: artists
+            });
         });
     });
 }
