@@ -77,29 +77,25 @@ function clickNotInterested() {
     }, 10);
 }
 
-/** Iterate over each video on a row */
-function checkRow(rowElement, blocklist) {
-    for (const video of rowElement.getElementsByTagName('ytd-rich-item-renderer')) {
-        checkVideo(video, blocklist);
-    }
-}
-
 /** Set up observer on new rows being added to main video wrapper */
 function setupObserver(wrapperElement, blocklist) {
     const observer = new MutationObserver(mutations => {
         for (const { addedNodes } of mutations) {
             for (const node of addedNodes) {
-                checkRow(node, blocklist);
+                if (node.nodeName.toLowerCase() === 'ytd-rich-item-renderer') {
+                    checkVideo(video, blocklist);
+                }
             }
         }
     });
 
     observer.observe(wrapperElement, {
         childList: true,
+        subtree: true,
     });
 
-    for (const node of wrapperElement.childNodes) {
-        checkRow(node, blocklist);
+    for (const node of wrapperElement.querySelectorAll('ytd-rich-item-renderer')) {
+        checkVideo(node, blocklist);
     }
 };
 
