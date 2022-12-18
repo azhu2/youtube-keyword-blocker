@@ -83,7 +83,7 @@ function setupObserver(wrapperElement, blocklist) {
         for (const { addedNodes } of mutations) {
             for (const node of addedNodes) {
                 if (node.nodeName.toLowerCase() === 'ytd-rich-item-renderer') {
-                    checkVideo(video, blocklist);
+                    checkVideo(node, blocklist);
                 }
             }
         }
