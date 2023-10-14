@@ -133,11 +133,32 @@ function getBlocklist() {
     });
 }
 
+function findAdblockerElement() {
+    return new Promise((resolve, reject) => {
+        const adblockerInterval = setInterval(pollForAdblocker, 100);
+        function pollForAdblocker() {
+            const adblockerElements = document.getElementsByTagName('ytd-enforcement-message-view-model')[0];
+            if (adblockerElements) {
+                clearInterval(adblockerInterval);
+                resolve(adblockerElement);
+            }
+        }
+    });
+}
+
+function killAdbocker(adblockerElement) {
+    const closeButton = adblockerElement.querySelector('yt-button-view-model');
+    closeButton.click();
+    console.log('Adblocker-blocker killed')
+}
+
 function init() {
     Promise.all([
         findWrapperElement(),
         getBlocklist(),
     ]).then(([ wrapperElement, blocklist ]) => setupObserver(wrapperElement, blocklist));
+
+    findAdblockerElement().then(e => killAdblocker);
 }
 
 init();
