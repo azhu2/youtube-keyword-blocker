@@ -137,8 +137,8 @@ function findAdblockerElement() {
     return new Promise((resolve, reject) => {
         const adblockerInterval = setInterval(pollForAdblocker, 100);
         function pollForAdblocker() {
-            const adblockerElements = document.getElementsByTagName('ytd-enforcement-message-view-model')[0];
-            if (adblockerElements) {
+            const adblockerElement = document.getElementsByTagName('ytd-enforcement-message-view-model')[0];
+            if (adblockerElement) {
                 clearInterval(adblockerInterval);
                 resolve(adblockerElement);
             }
