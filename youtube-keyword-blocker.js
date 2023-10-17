@@ -146,7 +146,7 @@ function findAdblockerElement() {
     });
 }
 
-function killAdbocker(adblockerElement) {
+function killAdblocker(adblockerElement) {
     const closeButton = adblockerElement.querySelector('yt-button-view-model');
     closeButton.click();
     console.log('Adblocker-blocker killed')
